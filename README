@@ -1,11 +1,15 @@
 Duplicate Finder
 
-Usage: dupefinder.rb [-p PATH] [-o 1|2|3] [-d]
+Usage: dupefinder.rb [-p PATH] [-o 1|2|3] [-d] [-i PATH] [-s]
 
 Flags:
 --path/-p PATH - Specify the path to check for duplicate files. Defaults to current directory.
 You may specify multiple paths.
 Example: -pp C:\users\test\downloads C:\users\test\downloads\music
+
+--ignore-paths/-i PATH - Ignore paths
+
+--subdirectory-search/-s - Search all subdirectories of the specified PATHS
 
 --output-verbose/-o 1|2|3 - Output verbosity.
 Levels:
