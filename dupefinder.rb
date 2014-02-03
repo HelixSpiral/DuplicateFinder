@@ -7,14 +7,25 @@ require 'optparse' # Needed for OptionParser
 
 options = {}
 find_paths = []
+ignore_paths = []
 
 OptionParser.new do |opts|
-	opts.on('-p', '--path PATH', 'Path to the directory to find duplicates in. (You may use this option more than once.)') do |path|
-		if (find_paths.index(path) == nil)
+	opts.on('-i', '--ignore-path PATH', 'Ignore these paths.') do |ipath|
+		if (ignore_paths.index(ipath) == nil)
+			ignore_paths.push(ipath)
+		end
+	end
+
+	opts.on('-p', '--path PATH', 'Paths to the directories to find duplicates in.') do |path|
+		if (find_paths.index(path) == nil && ignore_paths.index(path) == nil)
 			find_paths.push(path)
 		elsif
-			puts "Not adding duplicate path: #{path}"
+			puts "Not adding duplicate or ignored path: #{path}"
 		end
+	end
+
+	opts.on('-s', '--subdirectory-search', 'Search subdirectories of the given path.') do
+		options[:subdirectory] = true
 	end
 
 	opts.on('-o', '--output-verbose [1|2|3]', 'Level of information to show. (3+ is for debuging)') do |verbose|
@@ -31,9 +42,39 @@ OptionParser.new do |opts|
 	end
 end.parse!
 
+# I realize this might be a bit inefficient, doing all this looping here only to do it again
+# later when we loop to find duplicates, but if we don't loop here we can't collect all the
+# subdirectories to put into find_paths.
+# Since we're only checking if every file is a directory or not, I don't think this is too awful.
+if (options[:subdirectory] == true)
+	# Loop for the paths
+	find_paths.each do |x|
+		Dir.chdir(x)
+		puts "Checking path: #{x}" if (options[:verbose].to_i >= 3)
+
+		# Loop for everything in the directory.
+		Dir["*"].each do |z|
+			# If we find a path
+			if (File.directory?(z))
+				if (ignore_paths.index(File.expand_path(z)) == nil)
+					find_paths.push(File.expand_path(z))
+
+					puts "Found path: #{File.expand_path(z)}" if (options[:verbose].to_i >= 3)
+				end
+			end
+		end
+	end
+end
+
+# Display settings to the user.
 puts "Settings:"
-puts "- Verbose level: #{options[:verbose]}" if (options[:verbose])
+puts "- Verbosity Level: #{options[:verbose]}" if (options[:verbose])
 puts "- Auto Delete: #{options[:delete]}" if (options[:delete])
+puts "- Subdirectory Checking: #{options[:subdirectory]}" if (options[:subdirectory])
+puts "- Ignoring Paths:"
+ignore_paths.each do |x|
+	puts "- - #{x}"
+end
 puts "- Paths:"
 find_paths.each do |x|
 	puts "- - #{x}"
