@@ -28,7 +28,7 @@ OptionParser.new do |opts|
 		options[:recursive] = true
 	end
 
-	opts.on('-o', '--output-verbose [1|2|3]', 'Level of information to show. (3+ is for debuging)') do |verbose|
+	opts.on('-v', '--verbose [1|2|3]', 'Level of information to show. (3+ is for debuging)') do |verbose|
 		options[:verbose] = verbose
 	end
 

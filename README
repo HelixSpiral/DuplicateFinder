@@ -11,7 +11,7 @@ Example: -pp C:\users\test\downloads C:\users\test\downloads\music
 
 --recursive/-r - Search recursively
 
---output-verbose/-o 1|2|3 - Output verbosity.
+--verbose/-v 1|2|3 - Output verbosity.
 Levels:
 1 - Basic output
 2 - Verbose hash-checking output
