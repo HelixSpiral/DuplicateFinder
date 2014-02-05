@@ -24,8 +24,8 @@ OptionParser.new do |opts|
 		end
 	end
 
-	opts.on('-s', '--subdirectory-search', 'Search subdirectories of the given path.') do
-		options[:subdirectory] = true
+	opts.on('-r', '--recursive', 'Search recursively.') do
+		options[:recursive] = true
 	end
 
 	opts.on('-o', '--output-verbose [1|2|3]', 'Level of information to show. (3+ is for debuging)') do |verbose|
@@ -46,7 +46,7 @@ end.parse!
 # later when we loop to find duplicates, but if we don't loop here we can't collect all the
 # subdirectories to put into find_paths.
 # Since we're only checking if every file is a directory or not, I don't think this is too awful.
-if (options[:subdirectory] == true)
+if (options[:recursive] == true)
 	# Loop for the paths
 	find_paths.each do |x|
 		Dir.chdir(x)
@@ -70,7 +70,7 @@ end
 puts "Settings:"
 puts "- Verbosity Level: #{options[:verbose]}" if (options[:verbose])
 puts "- Auto Delete: #{options[:delete]}" if (options[:delete])
-puts "- Subdirectory Checking: #{options[:subdirectory]}" if (options[:subdirectory])
+puts "- Recursive Search: #{options[:recursive]}" if (options[:recursive])
 puts "- Ignoring Paths:"
 ignore_paths.each do |x|
 	puts "- - #{x}"
