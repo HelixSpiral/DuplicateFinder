@@ -18,3 +18,6 @@ Levels:
 3 - Used for debugging.
 
 --delete/-d - Specifies if you want to delete duplicate files automatically, if not given the script will only tell you which files were duplicates.
+
+While this script doesn't give you the option to output to a file. You can do this with command-line redirection.
+Example: ruby dupefinder.rb -p derpderp -r -v 3 -i stufftoignore > file.txt

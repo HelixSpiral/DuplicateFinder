@@ -8,20 +8,20 @@ require 'optparse' # Needed for OptionParser
 options = {}
 find_paths = []
 ignore_paths = []
+hashes = Hash.new {|hash,key| hash[key] = [] }
+total_duplicates = 0
 
 OptionParser.new do |opts|
 	opts.on('-i', '--ignore-path PATH', 'Ignore these paths.') do |ipath|
-		if (ignore_paths.index(ipath) == nil)
-			ignore_paths.push(ipath)
-		end
+		next if ignore_paths.index(ipath)
+
+		ignore_paths.push(ipath)
 	end
 
 	opts.on('-p', '--path PATH', 'Paths to the directories to find duplicates in.') do |path|
-		if (find_paths.index(path) == nil && ignore_paths.index(path) == nil)
-			find_paths.push(path)
-		elsif
-			puts "Not adding duplicate or ignored path: #{path}"
-		end
+		next if find_paths.index(path) || ignore_paths.index(path)
+
+		find_paths.push(path)
 	end
 
 	opts.on('-r', '--recursive', 'Search recursively.') do
@@ -54,14 +54,12 @@ if (options[:recursive] == true)
 
 		# Loop for everything in the directory.
 		Dir["*"].each do |z|
-			# If we find a path
-			if (File.directory?(z))
-				if (ignore_paths.index(File.expand_path(z)) == nil)
-					find_paths.push(File.expand_path(z))
+			next unless File.directory?(z)
+			next if ignore_paths.index(File.expand_path(z))
 
-					puts "Found path: #{File.expand_path(z)}" if (options[:verbose].to_i >= 3)
-				end
-			end
+			find_paths.push(File.expand_path(z))
+
+			puts "Found path: #{File.expand_path(z)}" if (options[:verbose].to_i >= 3)
 		end
 	end
 end
@@ -81,32 +79,25 @@ find_paths.each do |x|
 end
 puts "--------------------------------------------------"
 
-Files = {} # All files
-Duplicates = {} # Only duplicates
-
 find_paths.each do |z|
 	Dir.chdir(z)
 	puts "Changed to directory: #{z}" if (options[:verbose].to_i >= 1)
 
 	Dir["*"].each do |x|
-		if (File.file?(x))
-			if (Files.has_value?(Digest::SHA1.file(x)))
-				puts "Duplicate file found: #{Files.key(Digest::SHA1.file(x))} and #{Dir.pwd}/#{x}" if (options[:verbose].to_i >= 3)
-				Duplicates["#{Dir.pwd}/#{x}"] = Files.key(Digest::SHA1.file(x))
-			end
+		next unless File.file?(x)
 
-			Files["#{Dir.pwd}/#{x}"] = Digest::SHA1.file(x)
+		hash = Digest::SHA1.file(x)
+		hashes["#{hash}"] << File.expand_path(x)
 
-			puts "#{Dir.pwd}/#{x} - #{Digest::SHA1.file(x)}" if (options[:verbose].to_i >= 2)
-		end
+		puts "#{Dir.pwd}/#{x} - #{Digest::SHA1.file(x)}" if (options[:verbose].to_i >= 2)
 	end
 end
 
-Duplicates.each do |x, y|
-	if (options[:delete])
-		puts "Deleting file: #{x}, was duped with #{y}" if (options[:verbose].to_i >= 1)
-		File.delete(x)
-	else
-		puts "DUPE: #{x} WITH: #{y}"
-	end
+hashes.each do |hash, paths|
+	next if paths.size < 2
+
+	puts "Duplicates[#{hash}]", *paths, "\n"
+	total_duplicates += paths.size
 end
+
+puts "Total duplicated files: #{total_duplicates}"
