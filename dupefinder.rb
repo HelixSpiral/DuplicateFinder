@@ -97,6 +97,14 @@ hashes.each do |hash, paths|
 	next if paths.size < 2
 
 	puts "Duplicates[#{hash}]", *paths, "\n"
+
+	# Delete all but 1 path.
+	if (options[:delete])
+		1.upto(paths.size-1) do |p|
+			File.delete(paths[p])
+			puts "Deleting #{paths[p]}"
+		end
+	end
 	total_duplicates += paths.size
 end
 
