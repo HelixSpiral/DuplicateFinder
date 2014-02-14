@@ -9,6 +9,7 @@ options = {}
 find_paths = []
 ignore_paths = []
 hashes = Hash.new {|hash,key| hash[key] = [] }
+sizes = Hash.new {|size, key| size[key] = [] }
 total_duplicates = 0
 
 OptionParser.new do |opts|
@@ -86,10 +87,19 @@ find_paths.each do |z|
 	Dir["*"].each do |x|
 		next unless File.file?(x)
 
-		hash = Digest::SHA1.file(x)
-		hashes["#{hash}"] << File.expand_path(x)
+		size = File.size(x)
+		sizes["#{size}"] << File.expand_path(x)
+	end
+end
 
-		puts "#{Dir.pwd}/#{x} - #{Digest::SHA1.file(x)}" if (options[:verbose].to_i >= 2)
+sizes.each do |size, paths|
+	next if paths.size < 2
+
+	puts "Size[#{size}]", *paths, "\n" if (options[:verbose].to_i >= 3)
+	
+	paths.each do |p|
+		hash = Digest::SHA1.file(p)
+		hashes["#{hash}"] << p
 	end
 end
 
